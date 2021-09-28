@@ -1,0 +1,11 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+stock_modelo,stock.modelo,model_stock_modelo,base.group_user,1,1,1,1
+stock_tipo,stock.tipo,model_stock_tipo,base.group_user,1,1,1,1
+stock_unidad_negocio,stock.unidad.negocio,model_stock_unidad_negocio,base.group_user,1,1,1,1
+stock_forma,stock.forma,model_stock_forma,base.group_user,1,1,1,1
+stock_color,stock.color,model_stock_color,base.group_user,1,1,1,1
+stock_formato,stock.formator,model_stock_formato,base.group_user,1,1,1,1
+stock_uso,stock.uso,model_stock_uso,base.group_user,1,1,1,1
+stock_material,stock.material,model_stock_material,base.group_user,1,1,1,1
+stock_marca,stock.marca,model_stock_marca,base.group_user,1,1,1,1
+stock_calidad,stock.calidad,model_stock_calidad,base.group_user,1,1,1,1

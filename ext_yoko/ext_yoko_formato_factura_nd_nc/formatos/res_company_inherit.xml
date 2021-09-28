@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="logo_factura" model="ir.ui.view">
+        <field name="name">logo.factura</field>
+        <field name="model">res.company</field>
+        <field name="inherit_id" ref="base.view_company_form"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//form[1]/sheet[1]/notebook[1]" position="inside">
+                <page string="Logo Factura" name="studio_page_QJ9bo">
+                  <group name="studio_group_QJ9bo">
+                    <group name="studio_group_QJ9bo_left">
+                      <field name="logo_factura" widget='image'/>
+                    </group>
+                    <group name="studio_group_QJ9bo_right"/>
+                  </group>
+                </page>
+            </xpath>
+            
+        </field>
+    </record>
+</odoo>

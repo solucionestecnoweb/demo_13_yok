@@ -1,0 +1,384 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <data> 
+  <record id="paperformat_forma_libre" model="report.paperformat">
+
+      <field name="default" eval="True"/>
+        <field name="name">A4 Factura Forma Libre</field>
+        <field name="default" eval="True"/>
+        <field name="format">custom</field>
+        <field name="page_height">279</field>
+        <field name="page_width">216</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">52</field>
+        <field name="margin_bottom">5</field>
+        <field name="margin_left">5</field>
+        <field name="margin_right">5</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">35</field>
+        <field name="dpi">96</field>
+    </record>
+
+    <template id="report_invoice_with_payments_copy">
+            <t t-call="web.html_container">
+              <t t-call="web.basic_layout" >
+                <div class="page">
+                  
+                  <table width="100%" style="font-size:14px;">
+                    <tr>
+                      <td width="75%">CLIENTE: <t t-esc="docs.partner_id.name"/></td>
+                      <td align="right">FECHA: </td>
+                      <td align="right"><t t-esc="docs.formato_fecha(docs.invoice_date)"/></td>
+                    </tr>
+                    <tr>
+                      <td>RIF: <t t-esc="docs.doc_cedula(docs.partner_id.id)"/></td>
+                      <td align="right"> VENCE: </td>
+                      <td align="right"><t t-esc="docs.formato_fecha(docs.invoice_date_due)"/></td>
+                    </tr>
+                    <tr>
+                      <td>TELEFONOS: <t t-esc="docs.partner_id.phone"/>/<t t-esc="docs.partner_id.mobile"/></td>
+                      <t t-if="docs.type in ('out_invoice')">
+                        <td align="right"> CONDICIÓN: </td>
+                        <td align="right"><t t-esc="docs.condicion"/></td>
+                      </t>
+                      <t t-else="">
+                        <td>&amp;nbsp;</td>
+                        <td>&amp;nbsp;</td>
+                      </t>
+                    </tr>
+                    <tr>
+                      <td>DIRECCIÓN: <t t-esc="docs.partner_id.street"/></td>
+                      <t t-if="docs.type in ('out_invoice')">
+                        <td align="right"> VENDEDOR: </td>
+                        <td align="right"><t t-esc="docs.vendedor.name"/></td>
+                      </t>
+                      <t t-else="">
+                        <td>&amp;nbsp;</td>
+                        <td>&amp;nbsp;</td>
+                      </t>
+                    </tr>
+                    <tr>
+                      <td colspan="3">.</td>
+                    </tr>
+                  </table>
+                  <t t-if="docs.type== 'out_invoice' "><!-- SI ES UNA FACTURA -->
+                  <table width="100%" >
+                    <tbody class="table table-bordered">
+                        <tr align="center" style="font-size:15px;">
+                          <td>CÓDIGO</td>
+                          <td>DESCRIPCIÓN</td>
+                          <td>CANT.</td>
+                          <td>UNID.</td>
+                          <td>PRECIO UNIT.</td>
+                          <td>%DESC</td>
+                          <td>%I.V.A</td>
+                          <td>IMPORTE</td>
+                        </tr>
+                      </tbody>
+                      <t t-set="enum" t-value="0"/>
+                      <t t-set="espacio_blanco" t-value="23"/><!-- VALOR DEL TOTAL DE ESPACIO EN EL DETALLE DE LA FACTURA -->
+                      <t t-set="acum_subtotal" t-value="0"/>
+                      <t t-set="acum_alicuota_general" t-value="0"/>
+                      <t t-set="acum_base_imponible" t-value="0"/>
+                      <t t-set="acum_alicuota_reducida" t-value="0"/>
+                      <t t-set="acum_alicuota_adicional" t-value="0"/>
+                      <t t-set="total_factura" t-value="0"/>
+                      <t t-set="descuento" t-value="0"/>
+                      <t t-foreach="docs.invoice_line_ids" t-as="o">
+                        <t t-set="enum" t-value="enum+1"/>
+                        <tr style="font-size:13px;" height="30">
+                          <td align="left"><t t-esc="o.product_id.default_code"/></td>
+                          <td align="left"><t t-esc="o.product_id.name"/></td>
+                          <td><div align="center"><t t-esc="o.quantity"/></div></td>
+                          <td align="center"><t t-esc="o.product_uom_id.name"/></td>
+                          <td><div align="right"><t t-esc="o.float_format(o.fact_div_line(o.price_unit))"/></div></td>
+                          <td align="center">
+                            <t t-esc="o.discount"/>
+                            <t t-set="descuento" t-value="descuento+(o.quantity*o.price_unit*o.discount/100)"/>
+                          </td>
+                          <td><div align="center"><t t-esc="o.tax_ids.amount"/>%</div></td>
+                          <td><div align="right"><t t-esc="o.float_format(o.fact_div_line(o.price_subtotal))"/>
+                              <t t-set="acum_subtotal" t-value="acum_subtotal+o.price_subtotal"/></div>
+                          </td>
+
+                          <t t-if="o.tax_ids.aliquot== 'general' ">
+                            <t t-set="acum_alicuota_general" t-value="acum_alicuota_general+(o.price_total-o.price_subtotal)"/>
+                            <t t-set="acum_base_imponible" t-value="acum_base_imponible+o.price_subtotal"/>
+                          </t>
+                          <t t-if="o.tax_ids.aliquot== 'reduced' ">
+                            <t t-set="acum_alicuota_reducida" t-value="acum_alicuota_reducida+(o.price_total-o.price_subtotal)"/>
+                          </t>
+                          <t t-if="o.tax_ids.aliquot== 'additional' ">
+                            <t t-set="acum_alicuota_adicional" t-value="acum_alicuota_adicional+(o.price_total-o.price_subtotal)"/>
+                          </t>
+
+                        </tr>
+                      </t>
+
+                      <!--  RUTINA QUE LLENA ESPACIO EN BLANCO DESPUES DEL DETALLE DE LA FACTURA -->
+                      <t t-set="espacio_blanco" t-value="espacio_blanco-enum"/>
+                      <t t-foreach="range(espacio_blanco)" t-as="i">
+                        <tr><td colspan="8"> &amp;nbsp;</td></tr>
+                      </t>
+
+                    <tr style="font-size:13px;" height="30">
+                      <td colspan="7"><div align="right">SUBTOTAL:</div></td>
+                      <td colspan="1"><div align="right"><t t-esc="docs.float_format(docs.fact_div(acum_subtotal))"/>
+                      <t t-esc="docs.doc_currency_id.symbol"/></div></td>
+                      <t t-set="total_factura" t-value="total_factura+acum_subtotal"/>
+                    </tr>
+
+                    <tr style="font-size:13px;" height="30">
+                      <td colspan="7" align="right">
+                        OTROS DESC.%
+                      </td>
+                      <td align="right">
+                        <div align="right"><t t-esc="docs.float_format(docs.fact_div(descuento))"/></div>
+                      </td>
+                    </tr>
+
+                    <tr style="font-size:13px;" height="30">
+                      <td colspan="7"><div align="right">BASE IMPONIBLE:</div></td>
+                      <td colspan="1"><div align="right"><t t-esc="docs.float_format(docs.fact_div(acum_base_imponible))"/>
+                      <t t-esc="docs.doc_currency_id.symbol"/></div></td>
+                    </tr>
+
+                    <t t-if="acum_alicuota_general!= 0 ">
+                    <tr style="font-size:13px;" height="30">
+                      <td colspan="7"><div align="right">I.V.A(16%):</div></td>
+                      <td><div align="right"><t t-esc="docs.float_format(docs.fact_div(acum_alicuota_general))"/><t t-esc="docs.doc_currency_id.symbol"/></div>
+                      </td>
+                      <t t-set="total_factura" t-value="total_factura+acum_alicuota_general"/>
+                    </tr>
+                    </t>
+
+                    <t t-if="acum_alicuota_reducida!= 0 ">
+                    <tr style="font-size:13px;" height="30">
+                      <td colspan="7"><div align="right">I.V.A(8%):</div></td>
+                      <td><div align="right"><t t-esc="docs.float_format(docs.fact_div(acum_alicuota_reducida))"/><t t-esc="docs.doc_currency_id.symbol"/></div>
+                      </td>
+                      <t t-set="total_factura" t-value="total_factura+acum_alicuota_reducida"/>
+                    </tr>
+                    </t>
+
+                    <t t-if="acum_alicuota_adicional!= 0 ">
+                    <tr style="font-size:13px;" height="30">
+                      <td colspan="7"><div align="right">I.V.A(31%):</div></td>
+                      <td><div align="right"><t t-esc="docs.float_format(docs.fact_div(acum_alicuota_adicional))"/><t t-esc="docs.doc_currency_id.symbol"/></div>
+                      </td>
+                      <t t-set="total_factura" t-value="total_factura+acum_alicuota_adicional"/>
+                    </tr>
+                    </t>
+
+                    <tr style="font-size:13px;" height="30">
+                      <td colspan="7"><div align="right">TOTAL FACTURA DE VENTA:</div></td>
+                      <td><div align="right"><t t-esc="docs.float_format(docs.fact_div(total_factura))"/><t t-esc="docs.doc_currency_id.symbol"/></div>
+                      </td>
+                    </tr>
+
+                  </table>
+                </t> 
+                <t t-if="docs.type in ('out_refund',out_receipt)"><!-- SI ES UNA NOTA CREDITO / DEBITO -->
+                    <table  width="100%">
+                      <tr>
+                        <td width="50%"> <!-- inicio -->
+                          <div width="100%" style="border: 1pt solid black;">
+                                <div align="center">Información de la Factura</div>
+                                <div>
+                                  <table width="100%">
+                                    <tr>
+                                      <td width="50%">&amp;nbsp;&amp;nbsp;Número: 
+                                        <t t-if="docs.reversed_entry_id.invoice_number">
+                                            <t t-esc="docs.reversed_entry_id.invoice_number"/>
+                                        </t>
+                                        <t t-else="">
+                                          <t t-esc="docs.ref"/>
+                                        </t>
+                                      </td>
+                                      <td>Fecha de Emisión: <t t-esc="docs.formato_fecha(docs.reversed_entry_id.invoice_date)"/></td>
+                                    </tr>
+                                  </table>
+                                </div>
+                                <div>
+                                  <table width="60%">
+                                    <tr>
+                                      <td>
+                                        &amp;nbsp;&amp;nbsp;
+                                        Base Imponible:
+                                      </td>
+                                      <td align="right">
+                                        <t t-esc="docs.float_format(docs.fact_div(docs.base_imponible_fact_orig(docs.ref)))" />
+                                        <t t-esc="docs.doc_currency_id.symbol"/>
+                                      </td>
+                                    </tr>
+                                    <tr>
+                                      <td>
+                                        &amp;nbsp;&amp;nbsp;
+                                        I.V.A: 
+                                      </td>
+                                      <td align="right">
+                                        <t t-esc="docs.float_format(docs.fact_div(docs.iva_fact_orig(docs.ref)))" />
+                                        <t t-esc="docs.doc_currency_id.symbol"/>
+                                      </td>
+                                    </tr>
+                                    <tr>
+                                      <td>
+                                        &amp;nbsp;&amp;nbsp;
+                                        Neto: 
+                                      </td>
+                                      <td align="right">
+                                        <t t-esc="docs.float_format(docs.fact_div(docs.neto_fact_orig(docs.ref)))" />
+                                        <t t-esc="docs.doc_currency_id.symbol"/>
+                                      </td>
+                                    </tr>
+                                  </table>
+                                </div>
+                              </div>
+
+                        </td> <!--fin-->
+                        <td width="5%">&amp;nbsp;</td>
+                        <td width="45%" valign="top">
+                          <div>Doc.Orig:&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Factura</div>
+                          <div>Num Orig:&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;
+                            <t t-if="docs.reversed_entry_id.invoice_number">
+                              <t t-esc="docs.reversed_entry_id.invoice_number"/>
+                            </t>
+                            <t t-else="">
+                              <t t-esc="docs.ref"/>
+                            </t>
+                          </div>
+                          <div>Nota de Crédito <t t-esc="docs.razon_dev()"/>  </div>
+                        </td>
+                      </tr>
+                    </table>
+                    <div>&amp;nbsp;</div>
+                    <!--  detalle de la nota de credito -->
+                    <table width="100%" >
+                    <tbody class="table table-bordered">
+                        <tr align="center" style="font-size:15px;">
+                          <td>CODIGO</td>
+                          <td>DESCRIPCIÓN</td>
+                          <td>CANT.</td>
+                          <td>UNID.</td>
+                          <td>PRECIO UNIT.</td>
+                          <td>%DESC</td>
+                          <td>%I.V.A</td>
+                          <td>IMPORTE</td>
+                        </tr>
+                      </tbody>
+                      <t t-set="enum" t-value="0"/>
+                      <t t-set="espacio_blanco" t-value="19"/><!-- VALOR DEL TOTAL DE ESPACIO EN EL DETALLE DE LA NC/ND-->
+                      <t t-set="acum_subtotal" t-value="0"/>
+                      <t t-set="acum_alicuota_general" t-value="0"/>
+                      <t t-set="acum_base_imponible" t-value="0"/>
+                      <t t-set="acum_alicuota_reducida" t-value="0"/>
+                      <t t-set="acum_alicuota_adicional" t-value="0"/>
+                      <t t-set="total_factura" t-value="0"/>
+                      <t t-foreach="docs.invoice_line_ids" t-as="o">
+                        <t t-set="enum" t-value="enum+1"/>
+                        <tr style="font-size:13px;" height="30">
+                          <td align="left"><t t-esc="o.product_id.default_code"/></td>
+                          <td align="left"><t t-esc="o.product_id.name"/></td>
+                          <td><div align="center"><t t-esc="o.quantity"/></div></td>
+                          <td align="center"><t t-esc="o.product_uom_id.name"/></td>
+                          <td><div align="right"><t t-esc="o.float_format(o.fact_div_line(o.price_unit))"/></div></td>
+                          <td align="center"><t t-esc="o.discount"/></td>
+                          <td><div align="center"><t t-esc="o.tax_ids.amount"/>%</div></td>
+                          <td><div align="right"><t t-esc="o.float_format(o.fact_div_line(o.price_subtotal))"/>
+                              <t t-set="acum_subtotal" t-value="acum_subtotal+o.price_subtotal"/></div>
+                          </td>
+
+                          <t t-if="o.tax_ids.aliquot== 'general' ">
+                            <t t-set="acum_alicuota_general" t-value="acum_alicuota_general+(o.price_total-o.price_subtotal)"/>
+                            <t t-set="acum_base_imponible" t-value="acum_base_imponible+o.price_subtotal"/>
+                          </t>
+                          <t t-if="o.tax_ids.aliquot== 'reduced' ">
+                            <t t-set="acum_alicuota_reducida" t-value="acum_alicuota_reducida+(o.price_total-o.price_subtotal)"/>
+                          </t>
+                          <t t-if="o.tax_ids.aliquot== 'additional' ">
+                            <t t-set="acum_alicuota_adicional" t-value="acum_alicuota_adicional+(o.price_total-o.price_subtotal)"/>
+                          </t>
+
+                        </tr>
+                      </t>
+
+                      <!--  RUTINA QUE LLENA ESPACIO EN BLANCO DESPUES DEL DETALLE DE LA FACTURA -->
+                      <t t-set="espacio_blanco" t-value="espacio_blanco-enum"/>
+                      <t t-foreach="range(espacio_blanco)" t-as="i">
+                        <tr><td colspan="8"> &amp;nbsp;</td></tr>
+                      </t>
+
+                    <tr style="font-size:13px;" height="30">
+                      <td colspan="7"><div align="right">SUBTOTAL:</div></td>
+                      <td colspan="1"><div align="right"><t t-esc="docs.float_format(docs.fact_div(acum_subtotal))"/>
+                      <t t-esc="docs.doc_currency_id.symbol"/></div></td>
+                      <t t-set="total_factura" t-value="total_factura+acum_subtotal"/>
+                    </tr>
+
+                    <tr style="font-size:13px;" height="30">
+                      <td colspan="7"><div align="right">BASE IMPONIBLE:</div></td>
+                      <td colspan="1"><div align="right"><t t-esc="docs.float_format(docs.fact_div(acum_base_imponible))"/>
+                      <t t-esc="docs.doc_currency_id.symbol"/></div></td>
+                    </tr>
+
+                    <t t-if="acum_alicuota_general!= 0 ">
+                    <tr style="font-size:13px;" height="30">
+                      <td colspan="7"><div align="right">I.V.A(16%):</div></td>
+                      <td><div align="right"><t t-esc="docs.float_format(docs.fact_div(acum_alicuota_general))"/><t t-esc="docs.doc_currency_id.symbol"/></div>
+                      </td>
+                      <t t-set="total_factura" t-value="total_factura+acum_alicuota_general"/>
+                    </tr>
+                    </t>
+
+                    <t t-if="acum_alicuota_reducida!= 0 ">
+                    <tr style="font-size:13px;" height="30">
+                      <td colspan="7"><div align="right">I.V.A(8%):</div></td>
+                      <td><div align="right"><t t-esc="docs.float_format(docs.fact_div(acum_alicuota_reducida))"/><t t-esc="docs.doc_currency_id.symbol"/></div>
+                      </td>
+                      <t t-set="total_factura" t-value="total_factura+acum_alicuota_reducida"/>
+                    </tr>
+                    </t>
+
+                    <t t-if="acum_alicuota_adicional!= 0 ">
+                    <tr style="font-size:13px;" height="30">
+                      <td colspan="7"><div align="right">I.V.A(31%):</div></td>
+                      <td><div align="right"><t t-esc="docs.float_format(docs.fact_div(acum_alicuota_adicional))"/><t t-esc="docs.doc_currency_id.symbol"/></div>
+                      </td>
+                      <t t-set="total_factura" t-value="total_factura+acum_alicuota_adicional"/>
+                    </tr>
+                    </t>
+
+                    <tr style="font-size:13px;" height="30">
+                      <td colspan="7"><div align="right">TOTAL FACTURA DE VENTA:</div></td>
+                      <td><div align="right"><t t-esc="docs.float_format(docs.fact_div(total_factura))"/><t t-esc="docs.doc_currency_id.symbol"/></div>
+                      </td>
+                    </tr>
+
+                  </table>
+                </t>
+                </div>
+              </t>
+            </t>
+    </template>
+
+    <!--t t-set="lang" t-value="o.invoice_user_id.sudo().lang if o.type in ('in_invoice', 'in_refund') else o.partner_id.lang"/>
+                    <t t-call="account.report_invoice_document_with_payments" t-lang="lang"/-->
+
+    <report
+            id="account_facturas"
+            model="account.move"
+            string="Factura/NC/ND"
+            report_type="qweb-pdf"
+            name="ext_yoko_formato_factura_nd_nc.report_invoice_with_payments_copy"
+            file="ext_yoko_formato_factura_nd_nc.report_invoice_with_payments_copy"
+            paperformat="ext_yoko_formato_factura_nd_nc.paperformat_forma_libre"
+        />
+
+        <!--
+          attachment="(object.state == 'posted') and ((object.name or 'INV').replace('/','_')+'.pdf')"
+            print_report_name="(object._get_report_base_filename())"
+            groups="account.group_account_invoice"
+          -->
+  
+  </data>
+</odoo>

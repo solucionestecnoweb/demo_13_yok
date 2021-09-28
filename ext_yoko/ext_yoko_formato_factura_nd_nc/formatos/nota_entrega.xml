@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <data> 
+  <record id="paperformat_nota_entrega" model="report.paperformat">
+
+      <field name="default" eval="True"/>
+        <field name="name">A4 Nota de Entrega</field>
+        <field name="default" eval="True"/>
+        <field name="format">custom</field>
+        <field name="page_height">216</field>
+        <field name="page_width">279</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">52</field>
+        <field name="margin_bottom">75</field>
+        <field name="margin_left">5</field>
+        <field name="margin_right">5</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">35</field>
+        <field name="dpi">96</field>
+    </record>
+
+    <template id="report_invoice_with_payments_copy3">
+            <t t-call="web.html_container">
+              <t t-call="web.basic_layout" >
+                <div class="header">
+                    <table width="100%">
+                      <tr>
+                        <td style="font-size:45px;"><t t-esc="docs.company_id.name"/></td>
+                        <td align="center">
+                          <t t-if="docs.company_id.logo">  
+                            <img t-attf-src="data:image/*;base64,{{docs.company_id.logo}}" style="width:auto; height:80px;"/>
+                          </t>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="font-size:14px;">
+                          <t t-esc="docs.company_id.street"/><br/>
+                          <t t-esc="docs.company_id.street2"/><br/>
+                          <t t-esc="docs.company_id.city"/>
+                          <t t-esc="docs.company_id.zip"/>
+                        </td>
+                       <td style="font-size:20px;" align="center">DETALLE DE ORDEN DE ENTREGA Nº: <t t-esc="docs.muestra_nota_entrega()"/></td>
+                      </tr>
+                      <tr>
+                        <td style="font-size:14px;">
+                          RIF: <t t-esc="docs.company_id.partner_id.vat"/>
+                        </td>
+                        <td>Fecha de  Emisión: <t t-esc="docs.formato_fecha(docs.invoice_date)"/>
+                        &amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;
+                        &amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;
+                            Fecha de  Entrega: <t t-esc="docs.formato_fecha(docs.doc_origen(docs.invoice_origin))"/>
+
+                        </td>
+                      </tr>
+                      <tr style="font-size:14px;">
+                        <td>Cliente: <t t-esc="docs.partner_id.name"/></td>
+                        <td rowspan="4">
+                          <table width="100%" height="120" class="table table-bordered">
+                            <tr><td  valign="top">Observaciones:</td></tr>
+                          </table>
+                        </td>
+                      </tr>
+                      <tr style="font-size:14px;">
+                        <td>RIF: <t t-esc="docs.doc_cedula(docs.partner_id.id)"/></td>
+                        
+                      </tr>
+                      <tr style="font-size:14px;">
+                        <td>Dir. Entrega: <t t-esc="docs.partner_id.street"/></td>
+                        
+                      </tr>
+                      <tr style="font-size:14px;">
+                        <td>Teléfonos: <t t-esc="docs.partner_id.phone"/>/<t t-esc="docs.partner_id.mobile"/></td>
+                        
+                      </tr>
+                      <tr style="font-size:14px;">
+                        <td>Transporte: <t t-esc="docs.tipo_transporte"/></td>
+                        <td>&amp;nbsp;</td>
+                      </tr>
+                      <tr style="font-size:14px;">
+                        <td>Persona de Contacto: <t t-esc="docs.persona_contacto"/></td>
+                        <td>&amp;nbsp;</td>
+                      </tr>
+                      <tr>
+                        <td colspan="2"><hr size="5"/></td>
+                      </tr>
+                    </table>
+                    <table width="100%" class="table table-bordered">
+                      <tr align="center" style="font-size:12px; background-color:#EEEBEC; color: #253a0f;">
+                        <td>Referencia</td>
+                        <td>Descripción</td>
+                        <td>Cant. Cajas</td>
+                        <td>Cant.<br/>Piezas/Caja</td>
+                        <td>Cant. Piezas</td>
+                        <td>Unidad de Medida</td>
+                        <td>Volumen</td>
+                        <td>Peso</td>
+                      </tr>
+                      <t t-set="enum" t-value="0"/>
+                      <t t-set="espacio_blanco" t-value="10"/><!-- VALOR DEL TOTAL DE ESPACIO EN EL DETALLE DE LA FACTURA -->
+                      <t t-set="acum_subtotal" t-value="0"/>
+                      <t t-set="acum_alicuota_general" t-value="0"/>
+                      <t t-set="acum_alicuota_reducida" t-value="0"/>
+                      <t t-set="acum_alicuota_adicional" t-value="0"/>
+                      <t t-set="total_factura" t-value="0"/>
+
+                      <t t-foreach="docs.invoice_line_ids" t-as="o">
+                        <t t-set="enum" t-value="enum+1"/>
+                      <tr style="font-size:12px;">
+                      <td align="center">[<t t-esc="o.product_id.default_code"/>]</td>
+                        <td><t t-esc="o.product_id.name"/></td>
+                        <td><div align="center"><t t-esc="o.quantity"/></div></td>
+                        <td align="center"><t t-esc="o.product_uom_id.factor_inv"/></td>
+                        <td align="center"><t t-esc="o.product_uom_id.factor_inv*o.quantity"/></td>
+                        <td><div align="center">UNI</div></td>
+                        <!--td><div align="center"><t t-esc="o.product_uom_id.name"/></div></td-->
+                        <td><div align="center"><t t-esc="o.product_id.weight"/></div></td>
+                        <td><div align="right"><t t-esc="o.product_id.volume"/></div></td>
+                      </tr>
+                      </t>
+                    </table>
+                    <hr size="10"/>
+
+                    <table width="100%">
+                      <!--  RUTINA QUE LLENA ESPACIO EN BLANCO DESPUES DEL DETALLE DE LA FACTURA -->
+                      <t t-set="espacio_blanco" t-value="espacio_blanco-enum"/>
+                      <t t-foreach="range(espacio_blanco)" t-as="i">
+                        <tr><td> &amp;nbsp;</td></tr>
+                      </t>
+                      <tr>
+                        <td>
+                          Entregado por: ______________________________________
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>
+                          Recibido por:  _______________________________________
+                        </td>
+                      </tr>
+                      <tr>
+                        <td></td>
+                      </tr>
+                      <tr>
+                        <td align="center">SE AGRADECE AL CLIENTE REVISAR LA MERCANCIA. UNA VEZ CONFIRMADA ESTA NOTA LA EMPRESA NO ASUME RESPONSABILIDAD ALGUNA</td>
+                      </tr>
+                    </table>
+                </div>
+                
+                <div class="page">           
+
+                    &amp;nbsp;
+                </div>
+                <div class="footer">
+                 
+                  &amp;nbsp;
+                </div>
+              </t>
+            </t>
+    </template>
+
+    <!--t t-set="lang" t-value="o.invoice_user_id.sudo().lang if o.type in ('in_invoice', 'in_refund') else o.partner_id.lang"/>
+                    <t t-call="account.report_invoice_document_with_payments" t-lang="lang"/-->
+
+    <report
+            id="account_nota_entrega"
+            model="account.move"
+            string="Nota de Entrega"
+            report_type="qweb-pdf"
+            name="ext_yoko_formato_factura_nd_nc.report_invoice_with_payments_copy3"
+            file="ext_yoko_formato_factura_nd_nc.report_invoice_with_payments_copy3"
+            paperformat="ext_yoko_formato_factura_nd_nc.paperformat_nota_entrega"
+        />
+
+        <!--
+          attachment="(object.state == 'posted') and ((object.name or 'INV').replace('/','_')+'.pdf')"
+            print_report_name="(object._get_report_base_filename())"
+            groups="account.group_account_invoice"
+          -->
+  
+  </data>
+</odoo>

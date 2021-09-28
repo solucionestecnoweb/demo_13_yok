@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<record id="account_inherit_view_form_yoko" model="ir.ui.view">
+        <field name="name">account.inherit.view.form.yoko</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="l10n_ve_fiscal_requirements.account_inherit_view_form"/>
+        <field name="arch" type="xml">
+        	<xpath expr="//group/group/field[@name='invoice_ctrl_number_cli']" position="replace">
+	        	<field name="invoice_ctrl_number_cli" string="Nro Control:" attrs="{'invisible': [('type', 'not in', ('out_invoice'))],'required':[('type', 'in', ('out_invoice')),('act_nota_entre','=',False)],'readonly':[('act_nota_entre','=',True)]}"/>
+        	</xpath>
+        	<xpath expr="//group/group/field[@name='refund_ctrl_number_cli']" position="replace">
+	        	<field name="refund_ctrl_number_cli" string="Nro Control:" attrs="{'invisible': [('type', 'not in', ('out_refund','out_receipt')),],'required':[('type', 'in', ('out_refund')),('act_nota_entre','=',False)],'readonly':[('act_nota_entre','=',True)]}"/>
+        	</xpath>
+        	<xpath expr="//group/group/field[@name='nr_manual']" position="replace">
+	        	<field name="nr_manual" string="Numeración Fact. Manual?"  attrs="{'invisible': ['|',('type', 'in',('entry','in_invoice','in_refund','in_receipt')),('act_nota_entre','=',True)]}"/>
+        	</xpath>
+        </field>
+    </record>
+</odoo>
