@@ -161,6 +161,8 @@ class LibroVentasModelo(models.Model):
             tipo_doc="P"
         if tipo_doc=="c":
             tipo_doc="C"
+        if tipo_doc==False:
+            tipo_doc=''
         resultado=str(tipo_doc)+str(nro_doc)
         return resultado
         #raise UserError(_('cedula: %s')%resultado)

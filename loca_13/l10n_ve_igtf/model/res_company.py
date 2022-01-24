@@ -18,10 +18,10 @@ class ResCompany(models.Model):
                                                        "uno como la cuenta por pagar para el socio actual")
 
 
-    @api.onchange('calculate_wh_itf')
+    """@api.onchange('calculate_wh_itf')
     def _onchange_check_itf(self):
 
         if not self.calculate_wh_itf:
             self.write({'wh_porcentage':0.0,
                         'account_wh_itf_id': 'False'})
-        return
+        return"""

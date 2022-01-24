@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="landed_cost_view_inherit2" model="ir.ui.view">
+        <field name="name">landed.cost.view.inherit2</field>
+        <field name="model">stock.landed.cost</field>
+        <field name="inherit_id" ref="stock_landed_costs.view_stock_landed_cost_form"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//form[1]/sheet[1]/notebook[1]/page[1]/field[@name='cost_lines']/tree[1]/field[@name='split_method']" position="after">
+                <field name="price_unit_aux" widget="monetary" string="Costo"/>
+                <field name="currency_id" string="Moneda del costo"/>
+            </xpath>
+            <xpath expr="//form[1]/sheet[1]/notebook[1]/page[1]/field[@name='cost_lines']/tree[1]/field[@name='price_unit']" position="attributes">
+                <attribute name="attrs">{}</attribute>
+                <!--attribute name="readonly">1</attribute-->
+                <attribute name="string">Costo Final Bs</attribute>
+            </xpath>
+            <xpath expr="//form[1]/sheet[1]/notebook[1]" position="inside">
+                <page string="Resumen de Costo" name="studio_page_iGGTd">
+                  <group name="studio_group_iGGTd">
+                    <field name="line_resumen" nolabel="1" readonly="True">
+                        <tree string="Registro de Pagos" editable="buttom">
+                            <field name="descripcion" string="Producto"/>
+                            <field name="cantidad" string="Cantidad"/>
+                            <field name="costo_original" string="Monto total Original" readonly="1" widget="monetary"/>
+                            <field name="costo_adicional" string="Costo Adicional" widget='monetary'/>
+                            <field name="costo_total" string="Costo Total" widget='monetary'/>
+                            <field name="costo_unit_new" string="Costo Unitario" widget='monetary' options="{'currency_field': 'currency_company_id'}"/>
+                            <field name="costo_unit_new_div" string="Costo Unitario ($)"/>
+                        </tree>
+                    </field>
+                    <!--group name="studio_group_iGGTd_left"/>
+                    <group name="studio_group_iGGTd_right"/-->
+                  </group>
+                </page>
+            </xpath>
+            
+        </field>
+    </record>
+
+    <record id="view_picking_form_inherit" model="ir.ui.view">
+        <field name="name">view.picking.form.inherit</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header//button[@name='action_toggle_is_locked']" position="after">
+                <button name="ajustar_valor_inventario" type="object" string="Prueba" />
+            </xpath>
+
+        </field>
+    </record>
+
+    <record id="stock_valuation_layer_tree_inherit" model="ir.ui.view">
+        <field name="name">stock.valuation.layer.tree.inherit</field>
+        <field name="model">stock.valuation.layer</field>
+        <field name="inherit_id" ref="stock_account.stock_valuation_layer_tree"/>
+        <field name="arch" type="xml">
+           <xpath expr="//field[@name='create_date']" position="after">
+                <field name="fecha" string="Fecha recepción"/>
+            </xpath>
+            <xpath expr="//field[@name='create_date']" position="attributes">
+                <attribute name="string">Fecha Creación</attribute>
+            </xpath>
+
+        </field>
+    </record>
+
+    <record id="stock_valuation_layer_inerhit_conv_from" model="ir.ui.view">
+        <field name="name">stock.valuation.layer.conv.from</field>
+        <field name="model">stock.valuation.layer</field>
+        <field name="inherit_id" ref="stock_account.stock_valuation_layer_form"/>
+        <field name="arch" type="xml">
+           <xpath expr="//field[@name='create_date']" position="after">  
+                                    
+                <field name="fecha" string="Fecha recepción"/>
+              
+            </xpath>
+            <xpath expr="//field[@name='create_date']" position="attributes">
+                <attribute name="string">Fecha Creación</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>

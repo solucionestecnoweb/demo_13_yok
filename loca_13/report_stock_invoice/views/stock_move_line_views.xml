@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_move_line_invoice_tree" model="ir.ui.view">
+        <field name="name">stock.move.line.tree</field>
+        <field name="model">stock.move.line</field>
+        <field name="inherit_id" ref="stock.view_move_line_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='lot_id']" position="after">
+                    <field name="invoice_ids" optional="show" widget="many2many_tags"/>
+                    <field name="doc_note_entrega" optional="show"/>
+                    <field name="categ_id" optional="show"/>
+                    <field name="forma_id" optional="hide"/>
+                    <field name="color_id" optional="hide"/>
+                    <field name="modelo_id" optional="hide"/>
+                    <field name="tipo_id" optional="hide"/>
+                    <field name="uso_id" optional="hide"/>
+                    <field name="material_id" optional="hide"/>
+                    <field name="marca_comercial_id" optional="hide"/>
+                    <field name="calidad_id" optional="hide"/>
+                    <field name="uni_neg_id" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="stock_move_line_view_invoice_search" model="ir.ui.view">
+        <field name="name">stock.move.line.search</field>
+        <field name="model">stock.move.line</field>
+        <field name="inherit_id" ref="stock.stock_move_line_view_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='product_id']" position="before">
+                <field name="invoice_ids"/>
+                <field name="doc_note_entrega"/>
+                <field name="categ_id"/>
+            </xpath>
+            <xpath expr="//filter[@name='manufacturing']" position="after">
+                <filter string="Nota de entrega" name="doc_note_entrega" domain="[]" context="{'group_by': 'doc_note_entrega'}"/>
+                <filter string="Facturas" name="invoice_ids" domain="[('invoice_ids', '!=', False)]"/>
+                <filter string="categorias" name="categ_id"  domain="[('categ_id', '!=', False), ('picking_id.picking_type_id.code', '=', 'outgoing')]"/>
+                <filter string="Forma" name="forma_id"  domain="[('forma_id', '!=', False), ('picking_id.picking_type_id.code', '=', 'outgoing')]"/>
+                <filter string="Color" name="color_id"  domain="[('color_id', '!=', False), ('picking_id.picking_type_id.code', '=', 'outgoing')]"/>
+                <filter string="Modelo del producto" name="modelo_id"  domain="[('modelo_id', '!=', False), ('picking_id.picking_type_id.code', '=', 'outgoing')]"/>
+                <filter string="tipo" name="tipo_id"  domain="[('tipo_id', '!=', False), ('picking_id.picking_type_id.code', '=', 'outgoing')]"/>
+                <filter string="uso" name="uso_id"  domain="[('uso_id', '!=', False), ('picking_id.picking_type_id.code', '=', 'outgoing')]"/>
+                <filter string="material" name="material_id"  domain="[('material_id', '!=', False), ('picking_id.picking_type_id.code', '=', 'outgoing')]"/>
+                <filter string="Marca comecial" name="marca_comercial_id"  domain="[('marca_comercial_id', '!=', False), ('picking_id.picking_type_id.code', '=', 'outgoing')]"/>
+                <filter string="calidad" name="calidad_id"  domain="[('calidad_id', '!=', False), ('picking_id.picking_type_id.code', '=', 'outgoing')]"/>
+                <filter string="Unidad de negocio" name="uni_neg_id"  domain="[('uni_neg_id', '!=', False), ('picking_id.picking_type_id.code', '=', 'outgoing')]"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
